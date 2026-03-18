@@ -88,7 +88,7 @@ def create_sip(folder: Folder, entity: EntityAPI, upload: UploadAPI, process: Pr
                                                 Title=title, Asset_Metadata={DC_METADATA: dublin_core_xml},
                                                 Identifiers={"Identifier": identifier}, parent_folder=folder,
                                                 export_folder=export_folder, Preservation_files_fixity_callback=MetsFixityCallback(fixity_map, f"{basename}.mets.xml"))
-                print(package)
+                
                 upload.upload_zip_package_to_S3(path_to_zip_package=package, bucket_name=bucket, folder=folder,
                                                 callback=UploadProgressConsoleCallback(package),
                                                 delete_after_upload=True)
