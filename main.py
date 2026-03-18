@@ -6,10 +6,12 @@ from os import listdir
 from os.path import isfile, join
 import xml.etree.ElementTree as et
 from xml.etree.ElementTree import Element
-
+from tinydb import TinyDB, Query
 from pyPreservica import *
 from xml.dom import minidom
 from multiprocessing import Pool
+import datetime
+
 
 MD_FOLDER = "METADATA"
 TIF_FOLDER = "MASTER"
@@ -117,7 +119,8 @@ def main():
     export_folder: str = entity.config['data']['export_folder']
     workflow_name: str = entity.config['data']['workflow_name']
 
-
+    db:  TinyDB = TinyDB('ingested-content.json')
+    query: Query = Query()
 
     # Check we have a valid ingest workflow
     process_id = None
@@ -144,12 +147,23 @@ def main():
     num_processed: int = 0
     for zip_file in [f for f in listdir(storage_root) if (isfile(join(storage_root, f)) and f.endswith(".zip"))]:
         basename: str = os.path.basename(zip_file).replace(".zip", "")
-        if len(entity.identifier("Identifier", basename)) == 0:
-            print(f"Adding Package {zip_file} to the Queue ...")
-            num_processed = num_processed + 1
-            pool.apply_async(func=create_sip, args=(folder, entity, upload, process, process_id, zip_file, basename, storage_root, bucket, export_folder, num_processed))
+
+        # Check the TinyDB database first for ingest content as its quicker
+        results = db.search(query.identifier == basename)
+        if len(results) > 0:
+            for result in results:
+                print(f"Package {result['zip_file']} ingested with Preservica ID {result['ref']} Skipping ...")
         else:
-            print(f"Package {zip_file} already ingested. Skipping ...")
+            assets = entity.identifier("Identifier", basename)
+            if len(assets) == 0:
+                print(f"Adding Package {zip_file} to the Queue ...")
+                num_processed = num_processed + 1
+                pool.apply_async(func=create_sip, args=(folder, entity, upload, process, process_id, zip_file, basename, storage_root, bucket, export_folder, num_processed))
+            else:
+                print(f"Package {zip_file} already ingested. Skipping ...")
+                # Add information to the database
+                for a in assets:
+                    db.insert({'identifier': basename, 'zip_file': zip_file, 'ref': a.reference, 'title': a.title, 'date-time': str(datetime.datetime.now())})
 
     # Close the pool and wait for all the ingests to finish
     pool.close()
