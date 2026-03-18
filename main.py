@@ -17,6 +17,8 @@ MD_FOLDER = "METADATA"
 TIF_FOLDER = "MASTER"
 PDF_FOLDER = "PDF"
 
+MAX_WORKFLOW_SIZE: int = 4
+
 class MetsFixityCallback:
     def __init__(self, fixity_map: dict, xml_file: str):
         self.fixity_map = fixity_map
@@ -56,6 +58,16 @@ def dublin_core(root: Element, basename: str):
 
 
 def create_sip(folder: Folder, entity: EntityAPI, upload: UploadAPI, process: ProcessAPI, process_id: str, zip_file: str, basename: str, storage_root: str, bucket: str, export_folder: str, num_processed: int):
+    
+    
+    workflow_size = len(list(workflow.workflow_instances(workflow_state="Active", workflow_type="Ingest")))
+
+    while workflow_size > MAX_WORKFLOW_SIZE:
+        time.sleep(30)
+        workflow_size = len(list(workflow.workflow_instances(workflow_state="Active", workflow_type="Ingest")))
+        print(f"Workflow Size: {workflow_size}")
+
+    
     print(f"Found Package {zip_file} Extracting ...")
     extract_path = os.path.join(storage_root, basename)
     with zipfile.ZipFile(join(storage_root, zip_file), 'r') as zip_ref:
@@ -110,6 +122,7 @@ def main():
     upload: UploadAPI = UploadAPI()
     process: ProcessAPI = ProcessAPI()
     entity: EntityAPI = EntityAPI()
+    workflow: WorkflowAPI = WorkflowAPI()
 
     # Load the configuration settings
     storage_root: str = entity.config['data']['storage_root']
