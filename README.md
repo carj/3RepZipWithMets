@@ -7,4 +7,4 @@ Install
 
 Requirements:
 
-pip insall pyPreservica
+pip install pyPreservica
