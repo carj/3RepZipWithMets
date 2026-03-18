@@ -5,8 +5,38 @@ Automated Ingest of ZIP packages with 3 Representations
 Install
 ----------
 
-Requirements:
-
 pip install pyPreservica
 
 pip install tinydb
+
+
+Configuration
+----------
+
+Create a credentials.properties in a folder with the following properties
+
+[credentials]
+
+username=
+password=
+tenant=
+server=eu.preservica.com
+
+
+# The location of the source ZIP files:  Path
+storage_root=
+
+# The preservica collection to ingest new content into: UUID
+collection_id=
+
+# The cloud bucket connected to the ingest workflow: 
+bucket=
+
+# The number of concurrent uploads: Integer
+pool_size=
+
+# The location where the Preservica SIPs are written out to before upload
+export_folder=
+
+# The ingest workflow name
+workflow_name=
