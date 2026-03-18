@@ -13,10 +13,14 @@ pip install tinydb
 
 Create a credentials.properties in a folder with the following properties
 
-[credentials]
+[credentials] 
+
 username=
+
 password=
+
 tenant=
+
 server=eu.preservica.com
 
 
@@ -35,5 +39,15 @@ pool_size=
 The location where the Preservica SIPs are written out to before upload
 export_folder=
 
-# The ingest workflow name
+The ingest workflow name
 workflow_name=
+
+
+## Running 
+
+Run the main.py script from the folder with the credentials.properties
+After the script has completed re-run to generate audit information
+Completed ingests are written into a file 'ingested-content.json'
+
+
+
